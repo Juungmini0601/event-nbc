@@ -1,0 +1,34 @@
+spring:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.default_batch_fetch_size: 100
+
+---
+spring.config.activate.on-profile: local
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${storage.database.core-db-local.username}
+    password: ${storage.database.core-db-local.password}
+    url: jdbc:mysql://${storage.database.core-db-local.url}
+
+---
+spring.config.activate.on-profile: prod
+
+spring.datasource:
+  driver-class-name: com.mysql.cj.jdbc.Driver
+  username: ${storage.database.core-db-local.username}
+  password: ${storage.database.core-db-local.password}
+  url: jdbc:mysql://${storage.database.core-db-prod.url}
