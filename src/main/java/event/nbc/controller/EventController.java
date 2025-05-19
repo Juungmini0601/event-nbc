@@ -27,7 +27,7 @@ public class EventController {
 	}
 
 	@GetMapping("/gift")
-	public ResponseEntity<byte[]> getEvent(@RequestParam Long eventId) throws Exception {
+	public ResponseEntity<byte[]> getEvent(@RequestParam Long eventId) {
 
 		return ResponseEntity
 			.ok()

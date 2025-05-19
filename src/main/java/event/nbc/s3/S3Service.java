@@ -24,31 +24,33 @@ public class S3Service {
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
 
-	public List<String> getUploadPresignedUrl(Long eventId, List<String> imageName) {
+	public List<String> getUploadPresignedUrl(Long eventId, List<String> image) {
 
-		List<String> keys = imageName.stream().map(name -> name + eventId).toList();
+		List<String> keys = image.stream().map(imageName -> imageName + eventId).toList();
 		List<String> preSignedUrls = new ArrayList<>();
 
 		for (String key : keys) {
+			try {
+				PutObjectRequest putObjectRequest =
+					PutObjectRequest.builder()
+						.bucket(bucketName)
+						.key(key)
+						.build();
 
-			PutObjectRequest putObjectRequest =
-				PutObjectRequest.builder()
-					.bucket(bucketName)
-					.key(key)
-					.build();
+				PutObjectPresignRequest putObjectPresignRequest =
+					PutObjectPresignRequest.builder()
+						.signatureDuration(Duration.ofMinutes(5))
+						.putObjectRequest(putObjectRequest)
+						.build();
 
-			PutObjectPresignRequest putObjectPresignRequest =
-				PutObjectPresignRequest.builder()
-					.signatureDuration(Duration.ofMinutes(5))
-					.putObjectRequest(putObjectRequest)
-					.build();
+				PresignedPutObjectRequest presignedPutObjectRequest =
+					s3Presigner.presignPutObject(putObjectPresignRequest);
 
-			PresignedPutObjectRequest presignedPutObjectRequest =
-				s3Presigner.presignPutObject(putObjectPresignRequest);
-
-			preSignedUrls.add(presignedPutObjectRequest.url().toString());
+				preSignedUrls.add(presignedPutObjectRequest.url().toString());
+			} catch (Exception e) {
+				throw new RuntimeException("S3 저장 실패");
+			}
 		}
-
 		return preSignedUrls;
 	}
 
@@ -56,21 +58,25 @@ public class S3Service {
 
 		String key = imageName + eventId;
 
-		GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-			.bucket(bucketName)
-			.key(key)
-			.build();
+		try {
+			GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+				.bucket(bucketName)
+				.key(key)
+				.build();
 
-		GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-			.getObjectRequest(getObjectRequest)
-			.signatureDuration(Duration.ofMinutes(5))
-			.build();
+			GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+				.getObjectRequest(getObjectRequest)
+				.signatureDuration(Duration.ofMinutes(5))
+				.build();
 
-		return s3Presigner.presignGetObject(presignRequest)
-			.url()
-			.toString();
+			return s3Presigner.presignGetObject(presignRequest)
+				.url()
+				.toString();
+
+		} catch (Exception e) {
+			throw new RuntimeException("S3 조회 실패");
+		}
 	}
-
 }
 
 
