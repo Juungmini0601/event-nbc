@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+// 나중에 삭제해야함
 @Component
 public class EventRepository {
     private final Map<Long, Event> eventMap = new ConcurrentHashMap<>();
