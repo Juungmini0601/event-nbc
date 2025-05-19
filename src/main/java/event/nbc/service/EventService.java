@@ -1,7 +1,9 @@
 package event.nbc.service;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import event.nbc.dto.EventSetRequest;
@@ -11,6 +13,7 @@ import event.nbc.redis.RedisService;
 import event.nbc.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 
+@Profile("!test")
 @Service
 @RequiredArgsConstructor
 public class EventService {
@@ -21,13 +24,7 @@ public class EventService {
 
 	public List<String> setEvent(EventSetRequest eventSetRequest) {
 
-		Event event = Event.builder()
-			.eventId(eventSetRequest.eventId())
-			.remainingCount(eventSetRequest.imageName().size())
-			.imageUrls(eventSetRequest.imageName())
-			.startAt(eventSetRequest.startAt())
-			.endAt(eventSetRequest.endAt())
-			.build();
+		Event event = new Event(eventSetRequest.eventId(), eventSetRequest.imageName().size(), eventSetRequest.imageName(), eventSetRequest.startAt(), eventSetRequest.endAt());
 
 		redisService.setEvent(event);
 
@@ -41,7 +38,7 @@ public class EventService {
 
 		Long id = event.getEventId();
 
-		String imageName = event.getRemainImage();
+		String imageName = event.getImageUrls().get(0);
 
 		String presignedUrl = s3Service.getPresignedUrl(id, imageName);
 
