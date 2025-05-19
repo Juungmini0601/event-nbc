@@ -10,17 +10,17 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Builder
+@Getter
 public class Event {
 
-	@Getter
 	private Long eventId;
+
 	private Integer remainingCount;
-	@Getter
+
 	private List<String> imageUrls;
 
-	@Getter
 	private LocalDateTime startAt;
-	@Getter
+
 	private LocalDateTime endAt;
 
 	@JsonIgnore
@@ -41,10 +41,6 @@ public class Event {
 		this.imageUrls = imageUrls;
 		this.startAt = startAt;
 		this.endAt = endAt;
-	}
-
-	public int getRemainingCount() {
-		return remainingCount;
 	}
 
 	public synchronized String tryClaimImageUrlWithChance() {
