@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이벤트</title>
+
+    <!-- WebSocket 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <style>
+        #giftBox { display: none; }
+    </style>
+</head>
+<body>
+
+<h1>❗️❗️❗️❗️❗️10조의 엄청난 이벤트❗️❗️❗️❗️❗️</h1>
+
+<p>시작 시간: <span th:text="${event.startAt}"></span></p>
+<p>종료 시간: <span th:text="${event.endAt}"></span></p>
+<p>👀 현재 접속자 수: <span id="viewerCount">0</span>명</p>
+
+<div th:if="${isBeforeStart}">
+    <p>⏰ 아직 이벤트가 시작되지 않았습니다!</p>
+</div>
+
+<div th:if="${isEnded}">
+    <p>🔔 이벤트가 종료되었습니다!</p>
+</div>
+
+<!-- 숨겨진 eventId 저장 -->
+<input type="hidden" id="eventId" th:value="${event.eventId}" />
+
+<!-- 버튼 (시작된 상태만 표시) -->
+<!--<div th:if="${!isBeforeStart and !isEnded}">-->
+<!--    <button onclick="requestGift()">🎁 선물 받기</button>-->
+<!--</div>-->
+
+<!-- 결과 박스 -->
+<div id="giftBox"></div>
+
+<script>
+    const eventId = document.getElementById("eventId").value;
+    const socket = new SockJS('/ws');
+    const stomp = Stomp.over(socket);
+
+    stomp.connect({}, () => {
+        // 접속 알림
+        stomp.send(`/app/enter/${eventId}`, {}, "화랑");
+
+        // 선물 결과 구독
+        stomp.subscribe(`/topic/result/${eventId}`, function (message) {
+            const giftBox = document.getElementById("giftBox");
+            giftBox.style.display = "block";
+            const imageUrl = message.body;
+
+            if (imageUrl === "FAILED") {
+                giftBox.innerHTML = `
+                    <p>😆 실패했습니다! 다시 시도해 주세요!</p>
+                    <img src="https://i.namu.wiki/i/T5pSsHdoeOariQFbBYgKrxBulN1adE0fkINh3d4brcMUSpkda77l1ClV7T3bfSkWxyOM0pa2orPXflQUgc29ww.webp" width="300"/>
+                `;
+            } else if (imageUrl === "SOLD_OUT") {
+                giftBox.innerHTML = `
+                    <p>😢 선착순 마감! 너무 아쉬워요!!</p>
+                    <img src="https://i.imgur.com/SDGqQQZ.gif" width="300"/>
+                `;
+            } else {
+                giftBox.innerHTML = `
+                    <p>🎉 축하합니다! 선물을 획득했습니다!</p>
+                    <img src="${imageUrl}" width="300"/>
+                `;
+            }
+        });
+
+        stomp.subscribe(`/topic/viewers/${eventId}`, function (message) {
+            document.getElementById("viewerCount").innerText = message.body;
+        });
+
+        stomp.send(`/app/claim/${eventId}`, {}, "화랑");
+    });
+
+    // function requestGift() {
+    //     stomp.send(`/app/claim/${eventId}`, {}, "화랑");
+    // }
+</script>
+
+</body>
+</html>
