@@ -32,9 +32,9 @@
 <input type="hidden" id="eventId" th:value="${event.eventId}" />
 
 <!-- 버튼 (시작된 상태만 표시) -->
-<div th:if="${!isBeforeStart and !isEnded}">
-    <button onclick="requestGift()">🎁 선물 받기</button>
-</div>
+<!--<div th:if="${!isBeforeStart and !isEnded}">-->
+<!--    <button onclick="requestGift()">🎁 선물 받기</button>-->
+<!--</div>-->
 
 <!-- 결과 박스 -->
 <div id="giftBox"></div>
@@ -45,40 +45,43 @@
     const stomp = Stomp.over(socket);
 
     stomp.connect({}, () => {
-        // 1) 입장 알림 보내기
+        // 접속 알림
         stomp.send(`/app/enter/${eventId}`, {}, "화랑");
 
-        // 2) 결과 수신 구독
+        // 선물 결과 구독
         stomp.subscribe(`/topic/result/${eventId}`, function (message) {
+            const giftBox = document.getElementById("giftBox");
             giftBox.style.display = "block";
             const imageUrl = message.body;
 
             if (imageUrl === "FAILED") {
                 giftBox.innerHTML = `
-              <p>😆 실패했습니다! 다시 시도해 주세요!</p>
-              <img src="https://i.namu.wiki/i/T5pSsHdoeOariQFbBYgKrxBulN1adE0fkINh3d4brcMUSpkda77l1ClV7T3bfSkWxyOM0pa2orPXflQUgc29ww.webp" width="300"/>
-            `;
+                    <p>😆 실패했습니다! 다시 시도해 주세요!</p>
+                    <img src="https://i.namu.wiki/i/T5pSsHdoeOariQFbBYgKrxBulN1adE0fkINh3d4brcMUSpkda77l1ClV7T3bfSkWxyOM0pa2orPXflQUgc29ww.webp" width="300"/>
+                `;
             } else if (imageUrl === "SOLD_OUT") {
                 giftBox.innerHTML = `
-              <p>😢 선착순 마감! 너무 아쉬워요!!</p>
-              <img src="https://i.imgur.com/SDGqQQZ.gif" width="300"/>
-            `;
+                    <p>😢 선착순 마감! 너무 아쉬워요!!</p>
+                    <img src="https://i.imgur.com/SDGqQQZ.gif" width="300"/>
+                `;
             } else {
                 giftBox.innerHTML = `
-              <p>🎉 축하합니다! 선물을 획득했습니다!</p>
-              <img src="${imageUrl}" width="300"/>
-            `;
+                    <p>🎉 축하합니다! 선물을 획득했습니다!</p>
+                    <img src="${imageUrl}" width="300"/>
+                `;
             }
         });
 
         stomp.subscribe(`/topic/viewers/${eventId}`, function (message) {
             document.getElementById("viewerCount").innerText = message.body;
         });
+
+        stomp.send(`/app/claim/${eventId}`, {}, "화랑");
     });
 
-    function requestGift() {
-        stomp.send(`/app/claim/${eventId}`, {}, "화랑"); // 닉네임은 일단 "화랑"으로 고정
-    }
+    // function requestGift() {
+    //     stomp.send(`/app/claim/${eventId}`, {}, "화랑");
+    // }
 </script>
 
 </body>
