@@ -16,14 +16,16 @@ public class ClaimController {
     private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/claim/{eventId}")
-    public void handleClaim(@DestinationVariable Long eventId, String nickname) {
+    public void claim(@DestinationVariable Long eventId, String nickname) {
         Event event = eventRepository.findById(eventId);
-        if (event == null) return;
+        String result = event.tryClaimImageUrlWithChance();
 
-        String imageUrl = event.tryClaimImageUrlWithChance();
-        messagingTemplate.convertAndSend(
-                "/topic/result/" + eventId,
-                imageUrl != null ? imageUrl : "FAILED"
-        );
+        if ("SOLD_OUT".equals(result)) {
+            messagingTemplate.convertAndSend("/topic/result/" + eventId, "SOLD_OUT");
+        } else if ("FAILED".equals(result)) {
+            messagingTemplate.convertAndSend("/topic/result/" + eventId, "FAILED");
+        } else {
+            messagingTemplate.convertAndSend("/topic/result/" + eventId, result);
+        }
     }
 }

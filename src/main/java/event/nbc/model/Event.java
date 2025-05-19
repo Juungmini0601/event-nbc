@@ -11,6 +11,7 @@ public class Event {
 	@Getter
     private Long eventId;
 	private AtomicLong remainingCount;
+	@Getter
 	private List<String> imageUrls; // ConcurrentLinkedQueue, LinkedBlockingQueue, ArrayBlockingQueue, PriorityBlockingQueue, SynchronousQueue
 
 	@Getter
@@ -32,15 +33,18 @@ public class Event {
 	}
 
 	public synchronized String tryClaimImageUrlWithChance() {
-		if (Math.random() > 0.3) {
-			return null;
+		if (remainingCount.get() <= 0) {
+			return "SOLD_OUT";
 		}
 
-		long currentCount = remainingCount.get();
-		if (currentCount <= 0) return null;
+		if (Math.random() > 0.3) {
+			return "FAILED";
+		}
 
-		long imageIndex = imageUrls.size() - currentCount;
-		if (imageIndex < 0 || imageIndex >= imageUrls.size()) return null;
+		long imageIndex = imageUrls.size() - remainingCount.get();
+		if (imageIndex < 0 || imageIndex >= imageUrls.size()) {
+			return "SOLD_OUT";
+		}
 
 		remainingCount.decrementAndGet();
 		return imageUrls.get((int) imageIndex);
