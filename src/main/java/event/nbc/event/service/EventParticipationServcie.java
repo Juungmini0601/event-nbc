@@ -23,6 +23,11 @@ public class EventParticipationServcie {
             throw new EventException(EventExceptionCode.INVALID_EVENT);
         }
 
+        if (event.getRemainingCount() < 1) {
+            //throw new EventException(EventExceptionCode.EVENT_OUT_OF_STOCK);
+            return "SOLD_OUT";
+        }
+
         boolean isPicked= randomGenerator.tryPick(eventId, 20);
         if (!isPicked) {
             // 실패 이미지 반환
@@ -31,17 +36,16 @@ public class EventParticipationServcie {
             return "FAILED";
         }
 
-        int remainCount = (int) event.getRemainingCount();
-        if (remainCount < 1) {
-            //throw new EventException(EventExceptionCode.EVENT_OUT_OF_STOCK);
-            return "SOLD_OUT";
-        }
         //당첨
         //이미지 가져와서 반환
         String winnerImg = event.getImageUrls().getLast();
+
         event.decreaseRemakingCount();
+        if(event.getRemainingCount() < 1){
+            randomGenerator.clearStats(eventId);
+        }
         eventRepository.save(event);
-        randomGenerator.increaseWinnerCount(eventId.toString());
+        randomGenerator.increaseWinnerCount(eventId);
 
         //return s3Service.getImageBytes(winnerImg);
         return winnerImg;
