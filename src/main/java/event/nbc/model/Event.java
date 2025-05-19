@@ -28,7 +28,8 @@ public class Event {
 		this.endAt = endAt;
 	}
 
-    public long getRemainingCount() {
+
+	public long getRemainingCount() {
 		return remainingCount.get();
 	}
 
