@@ -22,6 +22,7 @@ public class ClaimController {
         //String result = event.tryClaimImageUrlWithChance();
         String result = eventParticipationServcie.participateEvent(eventId);
 
+        //이거 반환값이 어떤식이지??? 경로같은데 << 이 경로는어디서오는거지?
         if ("SOLD_OUT".equals(result)) {
             messagingTemplate.convertAndSend("/topic/result/" + eventId, "SOLD_OUT");
         } else if ("FAILED".equals(result)) {

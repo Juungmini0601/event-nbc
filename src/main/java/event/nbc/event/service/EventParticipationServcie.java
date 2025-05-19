@@ -7,14 +7,13 @@ import event.nbc.model.Event;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 @Service
 @RequiredArgsConstructor
 public class EventParticipationServcie {
 
     private final EventRedisRepository eventRepository;
     private final S3Service s3Service;
+    private final RandomGenerator randomGenerator;
 
     public String participateEvent(Long eventId){
 
@@ -24,8 +23,8 @@ public class EventParticipationServcie {
             throw new EventException(EventExceptionCode.INVALID_EVENT);
         }
 
-        boolean pick= isWinner(20);
-        if (!pick) {
+        boolean isPicked= randomGenerator.tryPick(eventId, 20);
+        if (!isPicked) {
             // 실패 이미지 반환
             String failImgPath = "실패 이미지 경로";
             //return s3Service.getImageBytes(failImgPath);
@@ -42,12 +41,9 @@ public class EventParticipationServcie {
         String winnerImg = event.getImageUrls().getLast();
         event.decreaseRemakingCount();
         eventRepository.save(event);
+        randomGenerator.increaseWinnerCount(eventId.toString());
+
         //return s3Service.getImageBytes(winnerImg);
         return winnerImg;
-    }
-
-    public boolean isWinner(int successRatePercent) {
-        int random = ThreadLocalRandom.current().nextInt(100); // 0 ~ 99
-        return random < successRatePercent;
     }
 }
