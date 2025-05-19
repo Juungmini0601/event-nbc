@@ -2,20 +2,25 @@ package event.nbc.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Builder;
 import lombok.Getter;
 
-@Getter
 @Builder
 public class Event {
+
+	@Getter
 	private Long eventId;
 	private Integer remainingCount;
+	@Getter
 	private List<String> imageUrls;
 
+	@Getter
 	private LocalDateTime startAt;
+	@Getter
 	private LocalDateTime endAt;
 
 	@JsonIgnore
@@ -29,4 +34,34 @@ public class Event {
 		return imageUrls.get(index);
 	}
 
+	public Event(Long eventId, int remainingCount, List<String> imageUrls,
+		LocalDateTime startAt, LocalDateTime endAt) {
+		this.eventId = eventId;
+		this.remainingCount = remainingCount;
+		this.imageUrls = imageUrls;
+		this.startAt = startAt;
+		this.endAt = endAt;
+	}
+
+	public int getRemainingCount() {
+		return remainingCount;
+	}
+
+	public synchronized String tryClaimImageUrlWithChance() {
+		if (remainingCount <= 0) {
+			return "SOLD_OUT";
+		}
+
+		if (Math.random() > 0.3) {
+			return "FAILED";
+		}
+
+		int imageIndex = imageUrls.size() - remainingCount;
+		if (imageIndex < 0 || imageIndex >= imageUrls.size()) {
+			return "SOLD_OUT";
+		}
+
+		remainingCount--;
+		return imageUrls.get(imageIndex);
+	}
 }
