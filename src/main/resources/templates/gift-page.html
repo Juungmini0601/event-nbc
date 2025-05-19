@@ -18,6 +18,7 @@
 
 <p>시작 시간: <span th:text="${event.startAt}"></span></p>
 <p>종료 시간: <span th:text="${event.endAt}"></span></p>
+<p>👀 현재 접속자 수: <span id="viewerCount">0</span>명</p>
 
 <div th:if="${isBeforeStart}">
     <p>⏰ 아직 이벤트가 시작되지 않았습니다!</p>
@@ -44,26 +45,34 @@
     const stomp = Stomp.over(socket);
 
     stomp.connect({}, () => {
+        // 1) 입장 알림 보내기
+        stomp.send(`/app/enter/${eventId}`, {}, "화랑");
+
+        // 2) 결과 수신 구독
         stomp.subscribe(`/topic/result/${eventId}`, function (message) {
             giftBox.style.display = "block";
             const imageUrl = message.body;
 
             if (imageUrl === "FAILED") {
                 giftBox.innerHTML = `
-                  <p>😆 실패했습니다! 다시 시도해 주세요!</p>
-                  <img src="https://i.namu.wiki/i/LznPyCIe7ikGOcLT1TfOLOHw9mZ-1jw3IG9J8AhaOC8aQ4N_WCqCSg3DMZQixhExkPIYDCr-R0_KTiCWfpiYiQ.webp" width="300"/>
-                `;
+              <p>😆 실패했습니다! 다시 시도해 주세요!</p>
+              <img src="https://i.namu.wiki/i/LznPyCIe7ikGOcLT1TfOLOHw9mZ-1jw3IG9J8AhaOC8aQ4N_WCqCSg3DMZQixhExkPIYDCr-R0_KTiCWfpiYiQ.webp" width="300"/>
+            `;
             } else if (imageUrl === "SOLD_OUT") {
                 giftBox.innerHTML = `
-                  <p>😢 선착순 마감! 낚시 이미지 출력</p>
-                  <img src="https://image-comic-fake.com/kingbat.jpg" width="300"/>
-                `;
+              <p>😢 선착순 마감! 낚시 이미지 출력</p>
+              <img src="https://i.namu.wiki/i/IhxQJtHszQLgTljlAFdE9jLInbksTxDZvsljpt5u_XWaS8bgqohFo4Y82mKR6qvqkHwUuKMQjAdtu9HZChx1xA.webp" width="300"/>
+            `;
             } else {
                 giftBox.innerHTML = `
-                  <p>🎉 축하합니다! 선물을 획득했습니다!</p>
-                  <img src="${imageUrl}" width="300"/>
-                `;
+              <p>🎉 축하합니다! 선물을 획득했습니다!</p>
+              <img src="${imageUrl}" width="300"/>
+            `;
             }
+        });
+
+        stomp.subscribe(`/topic/viewers/${eventId}`, function (message) {
+            document.getElementById("viewerCount").innerText = message.body;
         });
     });
 

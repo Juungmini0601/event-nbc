@@ -20,6 +20,7 @@ public class GiftController {
     @GetMapping("/event/{eventId}")
     public String enterEventPage(@PathVariable Long eventId, Model model) {
         Event event = eventRepository.findById(eventId);
+        // 나중에 삭제해야함
         if (event == null) {
             event = new Event(
                     eventId,
@@ -29,7 +30,7 @@ public class GiftController {
                             "https://dummyimage.com/300x200/111/eee&text=기프티콘2",
                             "https://dummyimage.com/300x200/222/eee&text=기프티콘3"
                     ),
-                    LocalDateTime.now().plusMinutes(1),
+                    LocalDateTime.now().minusMinutes(1),
                     LocalDateTime.now().plusMinutes(10)
             );
             eventRepository.save(event);
