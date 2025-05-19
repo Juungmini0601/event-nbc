@@ -1,4 +1,4 @@
-package event.nbc.domain.exception;
+package event.nbc.event.exception;
 
 import event.nbc.exception.BaseException;
 import lombok.Getter;

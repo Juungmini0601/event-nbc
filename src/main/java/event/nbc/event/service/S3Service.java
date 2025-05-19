@@ -1,4 +1,4 @@
-package event.nbc.domain.service;
+package event.nbc.event.service;
 
 
 import com.amazonaws.services.s3.AmazonS3;

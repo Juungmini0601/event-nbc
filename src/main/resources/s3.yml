@@ -6,4 +6,4 @@ cloud:
     region:
       static: ap-northeast-2
     s3:
-      bucket: &{s3.bucket-name}
+      bucket: ${s3.bucket-name}

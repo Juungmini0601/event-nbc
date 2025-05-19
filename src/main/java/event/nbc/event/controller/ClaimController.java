@@ -1,6 +1,6 @@
 package event.nbc.event.controller;
 
-import event.nbc.model.Event;
+import event.nbc.event.service.EventParticipationServcie;
 import event.nbc.event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -14,11 +14,13 @@ public class ClaimController {
 
     private final EventRepository eventRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final EventParticipationServcie eventParticipationServcie;
 
     @MessageMapping("/claim/{eventId}")
     public void claim(@DestinationVariable Long eventId, String nickname) {
-        Event event = eventRepository.findById(eventId);
-        String result = event.tryClaimImageUrlWithChance();
+        //Event event = eventRepository.findById(eventId);
+        //String result = event.tryClaimImageUrlWithChance();
+        String result = eventParticipationServcie.participateEvent(eventId);
 
         if ("SOLD_OUT".equals(result)) {
             messagingTemplate.convertAndSend("/topic/result/" + eventId, "SOLD_OUT");

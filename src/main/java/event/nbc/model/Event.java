@@ -32,6 +32,9 @@ public class Event {
 		return remainingCount.get();
 	}
 
+	public void decreaseRemakingCount(){
+		remainingCount.decrementAndGet();
+	}
 	public synchronized String tryClaimImageUrlWithChance() {
 		if (remainingCount.get() <= 0) {
 			return "SOLD_OUT";
@@ -49,4 +52,10 @@ public class Event {
 		remainingCount.decrementAndGet();
 		return imageUrls.get((int) imageIndex);
 	}
+
+	public boolean isEventActive() {
+		LocalDateTime now = LocalDateTime.now();
+		return !now.isBefore(this.startAt) && !now.isAfter(this.endAt);
+	}
+
 }

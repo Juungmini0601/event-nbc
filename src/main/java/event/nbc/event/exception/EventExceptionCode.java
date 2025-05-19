@@ -1,4 +1,4 @@
-package event.nbc.domain.exception;
+package event.nbc.event.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +10,7 @@ public enum EventExceptionCode {
 
     NOT_FOUND_EVENT(false, HttpStatus.NOT_FOUND, "해당 이벤트를 찾을 수 없습니다"),
     EVENT_OUT_OF_STOCK(false, HttpStatus.GONE, "당첨자가 모두 나왔습니다. 다음 기회에 다시 참여해주세요"),
+    EVENT_CRUD_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR, "이벤트 값을 레디스에 읽기/저장 실패했으요"),
     INVALID_EVENT(false, HttpStatus.BAD_REQUEST, "지금은 이벤트에 참여할 수 없어요");
 
     private final boolean isSuccess;
