@@ -6,19 +6,3 @@ spring:
     import:
       - redis.yml
       - monitoring.yml
-
----
-spring.config.activate.on-profile: local
-
-jwt:
-  access-token:
-    secret: ${jwt-local-access-secret}
-    expire: 3600000
-
----
-spring.config.activate.on-profile: prod
-
-jwt:
-  access-token:
-    secret: ${jwt-prod-access-secret}
-    expire: 3600000
