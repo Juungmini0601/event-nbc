@@ -1,4 +1,4 @@
-package event.nbc.service;
+package event.nbc.viewer.service;
 
 import lombok.Getter;
 import org.springframework.stereotype.Service;

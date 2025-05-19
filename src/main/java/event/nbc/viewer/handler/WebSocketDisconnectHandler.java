@@ -1,6 +1,6 @@
-package event.nbc.handler;
+package event.nbc.viewer.handler;
 
-import event.nbc.service.ViewerSessionService;
+import event.nbc.viewer.service.ViewerSessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

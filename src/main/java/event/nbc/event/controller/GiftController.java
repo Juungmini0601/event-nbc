@@ -1,7 +1,7 @@
-package event.nbc.controller;
+package event.nbc.event.controller;
 
 import event.nbc.model.Event;
-import event.nbc.repository.EventRepository;
+import event.nbc.event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

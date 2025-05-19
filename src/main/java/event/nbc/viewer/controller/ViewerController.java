@@ -1,6 +1,6 @@
-package event.nbc.controller;
+package event.nbc.viewer.controller;
 
-import event.nbc.service.ViewerSessionService;
+import event.nbc.viewer.service.ViewerSessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;

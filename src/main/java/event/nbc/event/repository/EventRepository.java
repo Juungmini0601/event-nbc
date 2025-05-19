@@ -1,4 +1,4 @@
-package event.nbc.repository;
+package event.nbc.event.repository;
 
 import event.nbc.model.Event;
 import org.springframework.stereotype.Component;
