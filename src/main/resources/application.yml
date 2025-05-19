@@ -1,8 +1,20 @@
 spring.application.name: coupon
 spring.profiles.active: local
 
+
 spring:
   config:
     import:
       - redis.yml
       - monitoring.yml
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${aws.access-key}
+      secret-key: ${aws.secret-key}
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: ${bucket-name}
+
