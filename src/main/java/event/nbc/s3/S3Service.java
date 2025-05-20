@@ -1,9 +1,13 @@
 package event.nbc.s3;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -22,6 +26,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 public class S3Service {
 
 	private final S3Presigner s3Presigner;
+	private final AmazonS3 s3Client;
 
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
@@ -73,6 +78,15 @@ public class S3Service {
 			.toString();
 	}
 
+	public byte[] getImageBytes(String key) {
+		S3Object s3Object = s3Client.getObject(bucketName, key);
+
+		try (S3ObjectInputStream inputStream = s3Object.getObjectContent()) {
+			return inputStream.readAllBytes();
+		} catch (IOException e) {
+			throw new RuntimeException("이미지 읽기 실패", e);
+		}
+	}
 }
 
 

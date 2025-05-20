@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 public class EventParticipationServcie {
 
     private final EventRedisRepository eventRepository;
-    private final S3Service s3Service;
     private final RandomGenerator randomGenerator;
 
     public String participateEvent(Long eventId){
@@ -24,18 +23,13 @@ public class EventParticipationServcie {
         }
 
         if (event.getRemainingCount() < 1) {
-            //throw new EventException(EventExceptionCode.EVENT_OUT_OF_STOCK);
             return "SOLD_OUT";
         }
 
-        boolean isPicked= randomGenerator.tryPick(eventId, 20);
-        if (!isPicked) {
+        if (!randomGenerator.tryPick(eventId, 20)) {
             // 실패 이미지 반환
-            String failImgPath = "실패 이미지 경로";
-            //return s3Service.getImageBytes(failImgPath);
             return "FAILED";
         }
-
         //당첨
         //이미지 가져와서 반환
         String winnerImg = event.getImageUrls().getLast();
@@ -47,7 +41,6 @@ public class EventParticipationServcie {
         eventRepository.save(event);
         randomGenerator.increaseWinnerCount(eventId);
 
-        //return s3Service.getImageBytes(winnerImg);
         return winnerImg;
     }
 }
