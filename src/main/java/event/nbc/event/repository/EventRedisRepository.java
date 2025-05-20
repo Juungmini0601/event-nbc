@@ -13,30 +13,23 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class EventRedisRepository{
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<Long, Event> redisTemplate;
     private final ObjectMapper objectMapper;
 
     public Event findById(Long eventId) {
-        String key = String.valueOf(eventId);
-        Object raw = redisTemplate.opsForValue().get(key);
+        Event event = redisTemplate.opsForValue().get(eventId);
 
-        if (raw == null) {
+        if (event == null) {
             throw new EventException(EventExceptionCode.NOT_FOUND_EVENT);
         }
-
-        try {
-            String jsonValue = raw.toString();
-            return objectMapper.readValue(jsonValue, Event.class);
-        } catch (JsonProcessingException e) {
-            throw new EventException(EventExceptionCode.EVENT_CRUD_FAILED);
-        }
+        return event;
     }
 
     public void save(Event event) {
         try {
-            String key = String.valueOf(event.getEventId());
+            Long key = event.getEventId();
             String jsonValue = objectMapper.writeValueAsString(event);
-            redisTemplate.opsForValue().set(key, jsonValue);
+            redisTemplate.opsForValue().set(key, event);
         } catch (JsonProcessingException e) {
             throw new EventException(EventExceptionCode.EVENT_CRUD_FAILED);
         }
