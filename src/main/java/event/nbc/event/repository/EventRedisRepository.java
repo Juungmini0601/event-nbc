@@ -8,16 +8,13 @@ import event.nbc.event.exception.EventExceptionCode;
 import event.nbc.model.Event;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Repository;
-
-import java.time.Duration;
 
 @Repository
 @RequiredArgsConstructor
 public class EventRedisRepository{
-    private RedisTemplate<String, Object> redisTemplate;
-    private ObjectMapper objectMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
 
     public Event findById(Long eventId) {
         String key = String.valueOf(eventId);

@@ -9,10 +9,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class EventParticipationServcie {
+public class EventParticipationService {
 
     private final EventRedisRepository eventRepository;
     private final RandomGenerator randomGenerator;
+    private static final int WINNING_PERCENTAGE = 20; //당첨확률
 
     public String participateEvent(Long eventId){
 
@@ -26,7 +27,7 @@ public class EventParticipationServcie {
             return "SOLD_OUT";
         }
 
-        if (!randomGenerator.tryPick(eventId, 20)) {
+        if (!randomGenerator.tryPick(eventId, WINNING_PERCENTAGE)) {
             // 실패 이미지 반환
             return "FAILED";
         }
@@ -34,7 +35,7 @@ public class EventParticipationServcie {
         //이미지 가져와서 반환
         String winnerImg = event.getImageUrls().getLast();
 
-        event.decreaseRemakingCount();
+        event.decreaseRemainingCount();
         if(event.getRemainingCount() < 1){
             randomGenerator.clearStats(eventId);
         }

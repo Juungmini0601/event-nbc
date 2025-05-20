@@ -33,25 +33,8 @@ public class Event {
 		return remainingCount.get();
 	}
 
-	public void decreaseRemakingCount(){
+	public void decreaseRemainingCount(){
 		remainingCount.decrementAndGet();
-	}
-	public synchronized String tryClaimImageUrlWithChance() {
-		if (remainingCount.get() <= 0) {
-			return "SOLD_OUT";
-		}
-
-		if (Math.random() > 0.3) {
-			return "FAILED";
-		}
-
-		long imageIndex = imageUrls.size() - remainingCount.get();
-		if (imageIndex < 0 || imageIndex >= imageUrls.size()) {
-			return "SOLD_OUT";
-		}
-
-		remainingCount.decrementAndGet();
-		return imageUrls.get((int) imageIndex);
 	}
 
 	public boolean isEventActive() {
