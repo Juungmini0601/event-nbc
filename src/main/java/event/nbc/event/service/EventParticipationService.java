@@ -14,7 +14,7 @@ public class EventParticipationService {
 
     private final EventRedisRepository eventRepository;
     private final RandomGenerator randomGenerator;
-    private static final int WINNING_PERCENTAGE = 5; //당첨확률
+    private static final int WINNING_PERCENTAGE = 10; //당첨확률
     private final RedisLockService lockService;
 
     public String participateEvent(Long eventId){

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -17,21 +18,24 @@ public class RedisLockService {
     private final RedisTemplate<String, String> redisTemplate;
 
     public String lock(String key) {
-        long waitMillis = 50; //락 시도 전까지 쉬는시간
-        int maxRetries = 100; //100번트라이
+        long baseWait = 70;
+        long jitter = ThreadLocalRandom.current().nextLong(-20, 21); // -20 ~ +20
+
+        final long waitMillis = baseWait + jitter; //락 시도 전까지 쉬는시간
+        final int maxRetries = 100; //리트 횟수
 
         String lockValue = UUID.randomUUID().toString(); //쓰레드별로 다른 락 키 값을 줘야함 (다른 쓰레드 지워버릴수도잇음)
 
-        for (int i = 0; i < maxRetries; i++) { //락 얻기 시도 10번하기
+        for (int i = 0; i < maxRetries; i++) { //락 얻기 시도
             Boolean success = redisTemplate
                     .opsForValue()
-                    .setIfAbsent(key, lockValue, Duration.ofMillis(3000));
+                    .setIfAbsent(key, lockValue, Duration.ofMillis(300));
 
             if (Boolean.TRUE.equals(success)) { //락 얻음
                 return lockValue;
             }
 
-            try { //못얻으면 0.1초 쉬고 다시 리트
+            try { //못얻으면 waitMillis ms 초 쉬고 다시 리트
                 Thread.sleep(waitMillis);
             } catch (InterruptedException e) { //Thread sleep 도중에 interrupted 발생
                 Thread.currentThread().interrupt();
@@ -56,7 +60,7 @@ public class RedisLockService {
                 lockValue
         );
 
-        boolean success = result > 0;
+        boolean success = result != null && result > 0;
         if (!success) { //삭제 실패
             log.warn("Unlock failed: key={}, lockValue={}", key, lockValue);
         }
