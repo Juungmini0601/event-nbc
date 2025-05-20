@@ -72,7 +72,6 @@ public class S3Service {
 			.url()
 			.toString();
 	}
-
 }
 
 
