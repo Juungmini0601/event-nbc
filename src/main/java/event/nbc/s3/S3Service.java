@@ -26,7 +26,6 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 public class S3Service {
 
 	private final S3Presigner s3Presigner;
-	private final AmazonS3 s3Client;
 
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
@@ -76,16 +75,6 @@ public class S3Service {
 		return s3Presigner.presignGetObject(presignRequest)
 			.url()
 			.toString();
-	}
-
-	public byte[] getImageBytes(String key) {
-		S3Object s3Object = s3Client.getObject(bucketName, key);
-
-		try (S3ObjectInputStream inputStream = s3Object.getObjectContent()) {
-			return inputStream.readAllBytes();
-		} catch (IOException e) {
-			throw new RuntimeException("이미지 읽기 실패", e);
-		}
 	}
 }
 
