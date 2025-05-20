@@ -17,8 +17,8 @@ public class RedisLockService {
     private final RedisTemplate<String, String> redisTemplate;
 
     public String lock(String key) {
-        long waitMillis = 100; //락 시도 전까지 쉬는시간
-        int maxRetries = 10; //10번트라이
+        long waitMillis = 50; //락 시도 전까지 쉬는시간
+        int maxRetries = 100; //100번트라이
 
         String lockValue = UUID.randomUUID().toString(); //쓰레드별로 다른 락 키 값을 줘야함 (다른 쓰레드 지워버릴수도잇음)
 

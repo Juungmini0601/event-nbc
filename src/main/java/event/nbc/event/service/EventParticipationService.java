@@ -14,7 +14,7 @@ public class EventParticipationService {
 
     private final EventRedisRepository eventRepository;
     private final RandomGenerator randomGenerator;
-    private static final int WINNING_PERCENTAGE = 20; //당첨확률
+    private static final int WINNING_PERCENTAGE = 5; //당첨확률
     private final RedisLockService lockService;
 
     public String participateEvent(Long eventId){
@@ -32,7 +32,8 @@ public class EventParticipationService {
                 throw new EventException(EventExceptionCode.INVALID_EVENT);
             }
 
-            if (event.getRemainingCount() < 1) {
+            long remainCnt = event.getRemainingCount();
+            if (remainCnt < 1) {
                 return "SOLD_OUT";
             }
 
@@ -42,7 +43,7 @@ public class EventParticipationService {
             }
             //당첨
             //이미지 가져와서 반환
-            String winnerImg = event.getImageUrls().getLast();
+            String winnerImg = event.getImageUrls().get((int) (remainCnt-1));
 
             event.decreaseRemainingCount();
             if(event.getRemainingCount() < 1){
