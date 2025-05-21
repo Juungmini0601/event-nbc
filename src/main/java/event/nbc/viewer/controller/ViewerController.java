@@ -18,6 +18,15 @@ public class ViewerController {
     public void handleEnter(@DestinationVariable Long eventId, SimpMessageHeaderAccessor accessor) {
         String sessionId = accessor.getSessionId();
         int count = viewerSessionService.addSession(eventId, sessionId);
+
+        // 기존 broadcast 유지
         messagingTemplate.convertAndSend("/topic/viewers/" + eventId, count);
+
+        // ➕ 접속한 본인에게도 직접 보내기
+        messagingTemplate.convertAndSendToUser(
+                sessionId,
+                "/queue/viewer-count/" + eventId,
+                count
+        );
     }
 }

@@ -21,13 +21,14 @@ public class ViewerSessionService {
     }
 
     public int removeSession(String sessionId) {
-        Long eventId = sessionIdToEventMap.remove(sessionId);
+        Long eventId = sessionIdToEventMap.get(sessionId);
         if (eventId != null) {
             Set<String> sessions = viewerSessionMap.get(eventId);
             if (sessions != null) {
                 sessions.remove(sessionId);
-                return sessions.size();
             }
+            sessionIdToEventMap.remove(sessionId);
+            return sessions != null ? sessions.size() : -1;
         }
         return -1;
     }
