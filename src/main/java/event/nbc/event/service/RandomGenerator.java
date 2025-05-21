@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class RandomGenerator {
@@ -17,15 +19,26 @@ public class RandomGenerator {
         Long requestCount = redisTemplate.opsForValue().increment(requestKey);
 
         // 현재까지의 당첨자 수 가져오기
-        String winnerStr = redisTemplate.opsForValue().get(winnerKey);
-        Long winnerCount = (winnerStr != null) ? Long.parseLong(winnerStr) : 0L;
+        Long winnerCount = Optional.ofNullable(redisTemplate.opsForValue().get(winnerKey))
+                .map(Long::parseLong)
+                .orElse(1L);
 
-        // 현재 비율로 제한 ( 계속 당첨당첨 붙지도않고 몰리지도 않고 일정 비율(20퍼 해놧음) 으로 xxxoxxxoxx << 이런식?
-        double currentRate = (double) winnerCount / requestCount; //increment라 null이나 0될 일 없음.
-        if (currentRate >= (rate / 100.0)) {
+        double currentRate = (double) winnerCount / requestCount;
+        double maxRate = rate / 100.0;
+        double minRate = maxRate * 0.4; // 보정 하한선: 4% 밑이면 무조건 당첨 (10의 40프로)
+
+        if (currentRate < minRate) {
+            return true;
+        }
+
+        // 현재 비율이 이미 목표 rate를 넘었다면 탈락
+        if (currentRate >= maxRate) {
             return false;
         }
-        return true;
+
+        // 그 외에는 랜덤 추첨
+        boolean isPicked = Math.random() < (rate / 100.0);
+        return isPicked;
     }
 
     public void increaseWinnerCount(Long eventId) { // 당첨되면 증가
