@@ -1,9 +1,5 @@
 package event.nbc.redis;
 
-import org.redisson.Redisson;
-import org.redisson.api.RedissonClient;
-import org.redisson.config.Config;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -18,12 +14,6 @@ import event.nbc.model.Event;
 
 @Configuration
 public class RedisConfig {
-
-	@Value("${spring.data.redis.host:localhost}")
-	private String redisHost;
-
-	@Value("${spring.data.redis.port:6379}")
-	private int redisPort;
 
 	@Bean
 	public RedisTemplate<Long, Event> EventRedisTemplate(
@@ -47,18 +37,5 @@ public class RedisConfig {
 		template.setValueSerializer(valueSerializer);
 
 		return template;
-	}
-
-	@Bean
-	public RedissonClient redissonClient() {
-		Config config = new Config();
-
-		config.useSingleServer()
-			.setAddress("redis://%s:%d".formatted(redisHost, redisPort))
-			.setConnectionMinimumIdleSize(10)
-			.setConnectionPoolSize(30)
-			.setTimeout(3000);
-
-		return Redisson.create(config);
 	}
 }

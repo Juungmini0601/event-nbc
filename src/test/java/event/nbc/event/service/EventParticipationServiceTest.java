@@ -54,7 +54,6 @@ class EventParticipationServiceTest {
         long start = System.currentTimeMillis();
 
         for (int i = 0; i < threadCount; i++) {
-            final int threadNum = i;
             executorService.execute(() -> {
                 try {
                     String result = participationService.participateEvent(1L);
@@ -62,7 +61,6 @@ class EventParticipationServiceTest {
                         successCnt.getAndIncrement();
                     }
                 } catch (EventException e) {
-                    System.out.println("[Thread " + threadNum + "] 예외 발생: " + e.getMessage());
                     exceptionCnt.getAndIncrement();
                 } finally {
                     latch.countDown();
