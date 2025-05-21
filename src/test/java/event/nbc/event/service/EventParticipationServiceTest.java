@@ -58,7 +58,7 @@ class EventParticipationServiceTest {
             executorService.execute(() -> {
                 try {
                     String result = participationService.participateEvent(1L);
-                    if (result.contains("success")) {
+                    if (result.startsWith("data:image/png;base64")) {
                         successCnt.getAndIncrement();
                     }
                 } catch (EventException e) {

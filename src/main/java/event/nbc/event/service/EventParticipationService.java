@@ -1,10 +1,13 @@
 package event.nbc.event.service;
 
 import event.nbc.aop.DistributedLock;
+import java.util.Base64;
+
 import event.nbc.event.exception.EventException;
 import event.nbc.event.exception.EventExceptionCode;
 import event.nbc.event.repository.EventRedisRepository;
 import event.nbc.model.Event;
+import event.nbc.service.EventService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -16,12 +19,12 @@ public class EventParticipationService {
     private final EventRedisRepository eventRepository;
     private final RandomGenerator randomGenerator;
     private static final int WINNING_PERCENTAGE = 10; //당첨확률
+    private final EventService eventService;
 
     @DistributedLock(key = "'lock:event:' + #eventId")
     public String participateEvent(Long eventId) {
         Event event = eventRepository.findById(eventId);
-
-        if( !event.isEventActive() ){
+        if (!event.isEventActive()) {
             throw new EventException(EventExceptionCode.INVALID_EVENT);
         }
 
@@ -34,17 +37,14 @@ public class EventParticipationService {
             // 실패 이미지 반환
             return "FAILED";
         }
-        //당첨
-        //이미지 가져와서 반환
-        String winnerImg = event.getImageUrls().get((int) (remainCnt-1));
 
-        event.decreaseRemainingCount();
-        if(event.getRemainingCount() < 1){
+        String base64 = Base64.getEncoder().encodeToString(eventService.getEvent(eventId));
+        String winnerImg = "data:image/png;base64," + base64;
+        if (event.getRemainingCount() < 1) {
             randomGenerator.clearStats(eventId);
         }
-        eventRepository.save(event);
-        randomGenerator.increaseWinnerCount(eventId);
 
+        randomGenerator.increaseWinnerCount(eventId);
         return winnerImg;
     }
 }
