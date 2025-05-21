@@ -18,13 +18,13 @@ public class WebSocketDisconnectHandler implements ApplicationListener<SessionDi
     public void onApplicationEvent(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = accessor.getSessionId();
+
+        // ✅ 세션을 종료했을 때 발동하는 로직
+        Long eventId = viewerSessionService.getSessionIdToEventMap().get(sessionId);
         int updatedCount = viewerSessionService.removeSession(sessionId);
 
-        if (updatedCount >= 0) {
-            Long eventId = viewerSessionService.getSessionIdToEventMap().get(sessionId);
-            if (eventId != null) {
-                messagingTemplate.convertAndSend("/topic/viewers/" + eventId, updatedCount);
-            }
+        if (eventId != null && updatedCount >= 0) {
+            messagingTemplate.convertAndSend("/topic/viewers/" + eventId, updatedCount);
         }
     }
 }
