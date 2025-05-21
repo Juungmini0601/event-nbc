@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이벤트 생성 폼</title>
+  <script>
+      async function submitForm(event) {
+          event.preventDefault();
+
+          const eventId = document.getElementById('event-id').value;
+          const imageFiles = document.getElementById('image-files').files;
+          const startAt = document.getElementById('start-at').value;
+          const endAt = document.getElementById('end-at').value;
+
+          const imageNames = Array.from(imageFiles).map(file => file.name);
+
+          const requestData = {
+              eventId: eventId ? parseInt(eventId, 10) : null,
+              imageName: imageNames,
+              startAt: startAt,
+              endAt: endAt
+          };
+
+          console.log(requestData);
+
+          try {
+              const response = await fetch('/gift', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(requestData),
+              });
+
+              if (!response.ok) {
+                  throw new Error('서버 요청 실패: ' + response.statusText);
+              }
+
+              const result = await response.json();
+              alert('요청 성공: ' + JSON.stringify(result));
+
+
+              await uploadToS3(imageFiles, result);
+              alert('이미지 업로드 완료!');
+
+          } catch (error) {
+              console.error('에러 발생:', error);
+              alert('요청 중 에러가 발생했습니다.');
+          }
+      }
+
+      async function uploadToS3(files, presignedUrls) {
+          if (files.length !== presignedUrls.length) {
+              throw new Error('Presigned URL 개수와 파일 개수가 일치하지 않습니다.');
+          }
+
+          const uploadPromises = [];
+
+          for (let i = 0; i < files.length; i++) {
+              const file = files[i];
+              const url = presignedUrls[i];
+
+              // 각 Presigned URL로 PUT 요청 (업로드)
+              const uploadPromise = fetch(url, {
+                  method: 'PUT',
+                  headers: {
+                      'Content-Type': file.type, // MIME 타입 지정
+                  },
+                  body: file,
+              });
+
+              uploadPromises.push(uploadPromise);
+          }
+
+          // 모든 파일 업로드 완료 시까지 대기
+          await Promise.all(uploadPromises);
+      }
+
+  </script>
+</head>
+<body>
+<h1>이벤트 생성 폼</h1>
+<form id="event-form" onsubmit="submitForm(event)">
+  <label for="event-id">Event ID:</label>
+  <input type="number" id="event-id" name="event-id" required>
+  <br><br>
+
+  <label for="image-files">이미지</label>
+  <input type="file" id="image-files" name="image-files" accept="image/*" multiple required>
+  <br><br>
+
+  <label for="start-at">Start At:</label>
+  <input type="datetime-local" id="start-at" name="start-at" required>
+  <br><br>
+
+  <label for="end-at">End At:</label>
+  <input type="datetime-local" id="end-at" name="end-at" required>
+  <br><br>
+
+  <button type="submit">Submit</button>
+</form>
+</body>
+</html>

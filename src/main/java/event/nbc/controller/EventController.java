@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import event.nbc.dto.EventSetRequest;
 import event.nbc.service.EventService;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RestController

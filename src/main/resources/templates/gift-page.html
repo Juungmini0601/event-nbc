@@ -10,6 +10,9 @@
 
     <style>
         #giftBox { display: none; }
+        #giftButton { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        #giftButton:disabled { background-color: grey; cursor: not-allowed; }
+
     </style>
 </head>
 <body>
@@ -31,6 +34,10 @@
 <!-- 숨겨진 eventId 저장 -->
 <input type="hidden" id="eventId" th:value="${event.eventId}" />
 
+<!-- 선물 요청 버튼 -->
+<button id="giftButton">🎁 선물 받기 시도</button>
+
+
 <!-- 결과 박스 -->
 <div id="giftBox"></div>
 
@@ -38,6 +45,8 @@
     const eventId = document.getElementById("eventId").value;
     const socket = new SockJS('/ws');
     const stomp = Stomp.over(socket);
+    const giftButton = document.getElementById("giftButton");
+    const giftBox = document.getElementById("giftBox");
 
     stomp.connect({}, () => {
         // 1) 접속 알림
@@ -69,6 +78,7 @@
                     <p>😢 선착순 마감! 너무 아쉬워요!!</p>
                     <img src="https://i.imgur.com/SDGqQQZ.gif" width="300"/>
                 `;
+                giftButton.disabled = true; // 선물 마감 시 버튼 비활성화
             }
         });
 
@@ -76,9 +86,15 @@
         stomp.subscribe(`/topic/viewers/${eventId}`, function (message) {
             document.getElementById("viewerCount").innerText = message.body;
         });
+    });
 
-        // 4) 바로 선물 요청
+    // 4) 버튼 클릭 시 선물 요청
+    giftButton.addEventListener("click", () => {
         stomp.send(`/app/claim/${eventId}`, {}, "화랑");
+        giftButton.disabled = true; // 버튼 일시 비활성화
+        setTimeout(() => {
+            giftButton.disabled = false; // 5초 후 버튼 다시 활성화
+        }, 1000);
     });
 
     // (선물 요청 버튼을 사용하려면 아래 주석을 풀고, HTML에 버튼 추가)
