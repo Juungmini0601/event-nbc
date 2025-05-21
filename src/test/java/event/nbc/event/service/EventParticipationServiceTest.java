@@ -73,7 +73,7 @@ class EventParticipationServiceTest {
         latch.await(); // 모든 작업 완료 대기
         executorService.shutdown();
         System.out.println("== 모든 스레드 작업 종료 ==");
-        Assertions.assertEquals(1, successCnt.get());
+        Assertions.assertEquals(5, successCnt.get());
         Assertions.assertEquals(0, exceptionCnt.get());
 
         long end = System.currentTimeMillis();
