@@ -1,11 +1,14 @@
 package event.nbc.aop;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
@@ -15,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 import event.nbc.event.exception.EventException;
 import event.nbc.event.exception.EventExceptionCode;
-import event.nbc.redis.RedisLockService;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -23,29 +25,37 @@ import lombok.RequiredArgsConstructor;
 @Component
 public class DistributedLockAspect {
 
-	private final RedisLockService redisLockService;
+	private final RedissonClient redissonClient;
 
 	private final ExpressionParser parser = new SpelExpressionParser();
 	private final DefaultParameterNameDiscoverer nameDiscoverer = new DefaultParameterNameDiscoverer();
 
 	@Around("@annotation(distributedLock)")
 	public Object around(ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {
-		String lockKey = null;
-		String lockValue = null;
+		String lockKey = parseKey(distributedLock.key(), joinPoint);
+		if (lockKey == null) {
+			throw new EventException(EventExceptionCode.LOCK_FAILED);
+		}
+		RLock lock = redissonClient.getLock(lockKey);
+
+		boolean locked = false;
 		try {
-			lockKey = parseKey(distributedLock.key(), joinPoint);
-			if (lockKey == null) {
+			locked = lock.tryLock(
+				distributedLock.waitTime(),
+				distributedLock.leaseTime(),
+				TimeUnit.SECONDS
+			);
+			if (!locked) {
 				throw new EventException(EventExceptionCode.LOCK_FAILED);
 			}
 
-			lockValue = redisLockService.lock(lockKey);
-			if (lockValue == null) {
-				throw new EventException(EventExceptionCode.LOCK_FAILED);
-			}
 			return joinPoint.proceed();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new EventException(EventExceptionCode.LOCK_FAILED);
 		} finally {
-			if (lockKey != null && lockValue != null) {
-				redisLockService.unlock(lockKey, lockValue);
+			if (locked && lock.isHeldByCurrentThread()) {
+				lock.unlock();
 			}
 		}
 	}
