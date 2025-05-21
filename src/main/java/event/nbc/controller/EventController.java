@@ -2,7 +2,6 @@ package event.nbc.controller;
 
 import java.util.List;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +14,6 @@ import event.nbc.dto.EventSetRequest;
 import event.nbc.service.EventService;
 import lombok.RequiredArgsConstructor;
 
-@Profile("!test")
 @RestController
 @RequiredArgsConstructor
 public class EventController {
@@ -29,7 +27,7 @@ public class EventController {
 	}
 
 	@GetMapping("/gift")
-	public ResponseEntity<byte[]> getEvent(@RequestParam Long eventId) throws Exception {
+	public ResponseEntity<byte[]> getEvent(@RequestParam Long eventId) {
 
 		return ResponseEntity
 			.ok()
