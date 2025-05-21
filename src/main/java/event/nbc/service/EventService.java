@@ -36,7 +36,7 @@ public class EventService {
 		return s3Service.getUploadPresignedUrl(eventSetRequest.eventId(), eventSetRequest.imageName());
 	}
 
-	// TODO : 동시성 작업 필요
+	// TODO : 동시성 작업 필요, AOP 만들어지면 적용 예정
 	public byte[] getEvent(Long eventId) {
 
 		Event event = redisService.getEvent(eventId);
