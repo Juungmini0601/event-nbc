@@ -12,34 +12,41 @@
         #giftBox { display: none; }
         #giftButton { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
         #giftButton:disabled { background-color: grey; cursor: not-allowed; }
-
+        #pageBody { display: none; }
     </style>
 </head>
 <body>
 
-<h1>❗️❗️❗️❗️❗️10조의 엄청난 이벤트❗️❗️❗️❗️❗️❗️</h1>
-
-<p>시작 시간: <span th:text="${event.startAt}"></span></p>
-<p>종료 시간: <span th:text="${event.endAt}"></span></p>
-<p>👀 현재 접속자 수: <span id="viewerCount">0</span>명</p>
-
-<div th:if="${isBeforeStart}">
-    <p>⏰ 아직 이벤트가 시작되지 않았습니다!</p>
+<!-- 로딩 표시 -->
+<div id="loader">
+    <p>페이지를 준비 중입니다...</p>
 </div>
 
-<div th:if="${isEnded}">
-    <p>🔔 이벤트가 종료되었습니다!</p>
+<!-- 본문 전체를 감싸는 요소 -->
+<div id="pageBody">
+    <h1>❗️❗️❗️❗️❗️10조의 엄청난 이벤트❗️❗️❗️❗️❗️❗️</h1>
+
+    <p>시작 시간: <span th:text="${event.startAt}"></span></p>
+    <p>종료 시간: <span th:text="${event.endAt}"></span></p>
+    <p>👀 현재 접속자 수: <span id="viewerCount">0</span>명</p>
+
+    <div th:if="${isBeforeStart}">
+        <p>⏰ 아직 이벤트가 시작되지 않았습니다!</p>
+    </div>
+
+    <div th:if="${isEnded}">
+        <p>🔔 이벤트가 종료되었습니다!</p>
+    </div>
+
+    <!-- 숨겨진 eventId 저장 -->
+    <input type="hidden" id="eventId" th:value="${event.eventId}" />
+
+    <!-- 선물 요청 버튼 -->
+    <button id="giftButton">🎁 선물 받기 시도</button>
+
+    <!-- 결과 박스 -->
+    <div id="giftBox"></div>
 </div>
-
-<!-- 숨겨진 eventId 저장 -->
-<input type="hidden" id="eventId" th:value="${event.eventId}" />
-
-<!-- 선물 요청 버튼 -->
-<button id="giftButton">🎁 선물 받기 시도</button>
-
-
-<!-- 결과 박스 -->
-<div id="giftBox"></div>
 
 <script>
     const eventId = document.getElementById("eventId").value;
@@ -49,12 +56,20 @@
     const giftBox = document.getElementById("giftBox");
 
     stomp.connect({}, () => {
-        // 1) 접속 알림
+        // 1) 접속자 수 수신 구독 (먼저 실행)
+        stomp.subscribe(`/topic/viewers/${eventId}`, function (message) {
+            document.getElementById("viewerCount").innerText = message.body;
+
+            // 수신 이후에 페이지 표시
+            document.getElementById("loader").style.display = "none";
+            document.getElementById("pageBody").style.display = "block";
+        });
+
+        // 2) 접속 알림 전송
         stomp.send(`/app/enter/${eventId}`, {}, "화랑");
 
-        // 2) 선물 결과 구독
+        // 3) 선물 결과 구독
         stomp.subscribe(`/topic/result/${eventId}`, function (message) {
-            const giftBox = document.getElementById("giftBox");
             giftBox.style.display = "block";
             const payload = message.body;
 
@@ -80,11 +95,6 @@
                 `;
                 giftButton.disabled = true; // 선물 마감 시 버튼 비활성화
             }
-        });
-
-        // 3) 뷰어 수 구독
-        stomp.subscribe(`/topic/viewers/${eventId}`, function (message) {
-            document.getElementById("viewerCount").innerText = message.body;
         });
     });
 
