@@ -15,7 +15,6 @@ public class RedisService {
 
 	private final RedisTemplate<Long, Event> template;
 
-	//TODO : (임시용) 그냥 저장만 할려고 대충 짠거니 추후 수정 필요
 	public Boolean setEvent(Event event) {
 
 		Duration ttl = Duration.between(LocalDateTime.now(), event.getEndAt());
@@ -23,7 +22,6 @@ public class RedisService {
 		return template.opsForValue().setIfAbsent(event.getEventId(), event, ttl);
 	}
 
-	//임시 redis 조회
 	public Event getEvent(Long eventId) {
 
 		return template.opsForValue().get(eventId);

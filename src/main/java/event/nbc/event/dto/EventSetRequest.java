@@ -1,4 +1,4 @@
-package event.nbc.dto;
+package event.nbc.event.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;

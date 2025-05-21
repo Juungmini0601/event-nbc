@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import event.nbc.s3.exception.S3ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -14,6 +15,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
+import event.nbc.s3.exception.S3Exception;
 
 @Component
 @RequiredArgsConstructor
@@ -48,7 +50,7 @@ public class S3Service {
 
 				preSignedUrls.add(presignedPutObjectRequest.url().toString());
 			} catch (Exception e) {
-				throw new RuntimeException("S3 저장 실패");
+				throw new S3Exception(S3ExceptionCode.PRESIGNED_PUT_URL_GENERATION_FAILED);
 			}
 		}
 		return preSignedUrls;
@@ -74,7 +76,7 @@ public class S3Service {
 				.toString();
 
 		} catch (Exception e) {
-			throw new RuntimeException("S3 조회 실패");
+			throw new S3Exception(S3ExceptionCode.PRESIGNED_GET_URL_GENERATION_FAILED);
 		}
 	}
 }

@@ -7,7 +7,6 @@ import event.nbc.event.exception.EventException;
 import event.nbc.event.exception.EventExceptionCode;
 import event.nbc.event.repository.EventRedisRepository;
 import event.nbc.model.Event;
-import event.nbc.service.EventService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;

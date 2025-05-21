@@ -1,4 +1,4 @@
-package event.nbc.controller;
+package event.nbc.event.controller;
 
 import java.util.List;
 
@@ -10,9 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import event.nbc.dto.EventSetRequest;
-import event.nbc.service.EventService;
-import lombok.Getter;
+import event.nbc.event.dto.EventSetRequest;
+import event.nbc.event.service.EventService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
