@@ -43,4 +43,5 @@ public class S3config {
 			.credentialsProvider(StaticCredentialsProvider.create(credentials))
 			.build();
 	}
+
 }

@@ -43,21 +43,17 @@ public class Event {
 		this.endAt = endAt;
 	}
 
-	public synchronized String tryClaimImageUrlWithChance() {
-		if (remainingCount <= 0) {
-			return "SOLD_OUT";
-		}
-
-		if (Math.random() > 0.3) {
-			return "FAILED";
-		}
-
-		int imageIndex = imageUrls.size() - remainingCount;
-		if (imageIndex < 0 || imageIndex >= imageUrls.size()) {
-			return "SOLD_OUT";
-		}
-
-		remainingCount--;
-		return imageUrls.get(imageIndex);
+	public int getRemainingCount() {
+		return remainingCount;
 	}
+
+	public void decreaseRemainingCount(){
+		remainingCount--;
+	}
+
+	public boolean isEventActive() {
+		LocalDateTime now = LocalDateTime.now();
+		return !now.isBefore(this.startAt) && !now.isAfter(this.endAt);
+	}
+
 }
