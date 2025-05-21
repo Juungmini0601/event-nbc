@@ -1,10 +1,13 @@
-package event.nbc.service;
+package event.nbc.event.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import event.nbc.dto.EventSetRequest;
+import event.nbc.aop.DistributedLock;
+import event.nbc.event.dto.EventSetRequest;
+import event.nbc.event.exception.EventException;
+import event.nbc.event.exception.EventExceptionCode;
 import event.nbc.model.Event;
 import event.nbc.qr.QrUtil;
 import event.nbc.redis.RedisService;
@@ -30,13 +33,13 @@ public class EventService {
 			.build();
 
 		if (!redisService.setEvent(event)) {
-			throw new RuntimeException("이벤트 저장 실패");
+			throw new EventException(EventExceptionCode.DUPLICATED_EVENT_ID);
 		}
 
 		return s3Service.getUploadPresignedUrl(eventSetRequest.eventId(), eventSetRequest.imageName());
 	}
 
-	// TODO : 동시성 작업 필요, AOP 만들어지면 적용 예정
+	@DistributedLock(key = "'lock:event:' + #eventId")
 	public byte[] getEvent(Long eventId) {
 
 		Event event = redisService.getEvent(eventId);
@@ -44,7 +47,7 @@ public class EventService {
 		String imageName = event.getRemainImage();
 
 		if (!redisService.updateEvent(event)) {
-			throw new RuntimeException("이벤트 업데이트 실패");
+			throw new EventException(EventExceptionCode.EVENT_CRUD_FAILED);
 		}
 
 		Long id = event.getEventId();
