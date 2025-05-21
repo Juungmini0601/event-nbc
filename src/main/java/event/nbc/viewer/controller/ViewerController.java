@@ -8,6 +8,8 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import java.util.Objects;
+
 @RequiredArgsConstructor
 @Controller
 public class ViewerController {
@@ -22,9 +24,9 @@ public class ViewerController {
         // 기존 broadcast 유지
         messagingTemplate.convertAndSend("/topic/viewers/" + eventId, count);
 
-        // ➕ 접속한 본인에게도 직접 보내기
+        // 접속한 본인에게도 직접 보내기
         messagingTemplate.convertAndSendToUser(
-                sessionId,
+                Objects.requireNonNull(sessionId),
                 "/queue/viewer-count/" + eventId,
                 count
         );
