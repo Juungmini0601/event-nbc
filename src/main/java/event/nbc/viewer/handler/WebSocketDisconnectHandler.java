@@ -1,5 +1,8 @@
 package event.nbc.viewer.handler;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import event.nbc.viewer.service.ViewerSessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationListener;
@@ -23,8 +26,11 @@ public class WebSocketDisconnectHandler implements ApplicationListener<SessionDi
         Long eventId = viewerSessionService.getSessionIdToEventMap().get(sessionId);
         int updatedCount = viewerSessionService.removeSession(sessionId);
 
+        Map<String, Integer> data = new HashMap<>();
+        data.put("viewerCount", updatedCount);
+
         if (eventId != null && updatedCount >= 0) {
-            messagingTemplate.convertAndSend("/topic/viewers/" + eventId, updatedCount);
+            messagingTemplate.convertAndSend("/topic/viewers/" + eventId, data);
         }
     }
 }

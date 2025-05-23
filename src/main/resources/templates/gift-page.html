@@ -96,8 +96,12 @@
         // 1) 접속자 수와 남은 선물 개수 수신 구독 (먼저 실행)
         stomp.subscribe(`/topic/viewers/${eventId}`, function (message) {
             const data = JSON.parse(message.body);
-            document.getElementById("viewerCount").innerText = data.viewerCount;
-            document.getElementById("remainingGifts").innerText = data.remainingGifts;
+            if ('viewerCount' in data) {
+                document.getElementById("viewerCount").innerText = data.viewerCount;
+            }
+            if ('remainingGifts' in data) {
+                document.getElementById("remainingGifts").innerText = data.remainingGifts;
+            }
 
             // 수신 이후에 페이지 표시
             document.getElementById("loader").style.display = "none";
@@ -108,7 +112,7 @@
         stomp.send(`/app/enter/${eventId}`, {}, "화랑");
 
         // 3) 선물 결과 구독
-        stomp.subscribe(`/topic/result/${eventId}`, function (message) {
+        stomp.subscribe(`/user/queue/result/${eventId}`, function (message) {
             giftBox.style.display = "block";
             const payload = message.body;
 
