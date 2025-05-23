@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @RequiredArgsConstructor
 @Controller
@@ -29,6 +30,10 @@ public class GiftController {
         model.addAttribute("isBeforeStart", isBeforeStart);
         model.addAttribute("isEnded", isEnded);
         model.addAttribute("isAvailable", isAvailable);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM월 dd일 HH:mm");
+
+        model.addAttribute("startAt", event.getStartAt().format(formatter));
+        model.addAttribute("endAt", event.getEndAt().format(formatter));
 
         return "gift-page";
     }

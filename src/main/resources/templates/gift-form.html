@@ -22,8 +22,6 @@
               endAt: endAt
           };
 
-          console.log(requestData);
-
           try {
               const response = await fetch('/gift', {
                   method: 'POST',
@@ -38,8 +36,6 @@
               }
 
               const result = await response.json();
-              alert('요청 성공: ' + JSON.stringify(result));
-
 
               await uploadToS3(imageFiles, result);
               alert('이미지 업로드 완료!');

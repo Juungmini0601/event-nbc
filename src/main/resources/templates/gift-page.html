@@ -13,6 +13,35 @@
         #giftButton { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
         #giftButton:disabled { background-color: grey; cursor: not-allowed; }
         #pageBody { display: none; }
+
+        body {
+            width: 100%;
+            height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            border: 1px solid black;
+        }
+
+        .container p {
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .button-section {
+            display: flex;
+            justify-content: center;
+        }
+
     </style>
 </head>
 <body>
@@ -24,28 +53,35 @@
 
 <!-- 본문 전체를 감싸는 요소 -->
 <div id="pageBody">
-    <h1>❗️❗️❗️❗️❗️10조의 엄청난 이벤트❗️❗️❗️❗️❗️❗️</h1>
+    <div class="container">
+        <h1>❗️❗️❗️❗️❗️10조의 엄청난 이벤트❗️❗️❗️❗️❗️❗️</h1>
 
-    <p>시작 시간: <span th:text="${event.startAt}"></span></p>
-    <p>종료 시간: <span th:text="${event.endAt}"></span></p>
-    <p>👀 현재 접속자 수: <span id="viewerCount">0</span>명</p>
+        <p>시작 시간: <span th:text="${startAt}"></span></p>
+        <p>종료 시간: <span th:text="${endAt}"></span></p>
+        <p>👀 현재 접속자 수: <span id="viewerCount">0</span>명</p>
+        <p>🎁 남은 선물 개수: <span id="remainingGifts">0</span>개</p>
 
-    <div th:if="${isBeforeStart}">
-        <p>⏰ 아직 이벤트가 시작되지 않았습니다!</p>
+        <div th:if="${isBeforeStart}">
+            <p>⏰ 아직 이벤트가 시작되지 않았습니다!</p>
+        </div>
+
+        <div th:if="${isEnded}">
+            <p>🔔 이벤트가 종료되었습니다!</p>
+        </div>
+
+        <!-- 숨겨진 eventId 저장 -->
+        <input type="hidden" id="eventId" th:value="${event.eventId}" />
+
+        <!-- 선물 요청 버튼 -->
+        <div class="button-section">
+            <button id="giftButton">🎁 선물 받기 시도</button>
+        </div>
+
+
+        <!-- 결과 박스 -->
+        <div id="giftBox"></div>
     </div>
 
-    <div th:if="${isEnded}">
-        <p>🔔 이벤트가 종료되었습니다!</p>
-    </div>
-
-    <!-- 숨겨진 eventId 저장 -->
-    <input type="hidden" id="eventId" th:value="${event.eventId}" />
-
-    <!-- 선물 요청 버튼 -->
-    <button id="giftButton">🎁 선물 받기 시도</button>
-
-    <!-- 결과 박스 -->
-    <div id="giftBox"></div>
 </div>
 
 <script>
@@ -54,11 +90,14 @@
     const stomp = Stomp.over(socket);
     const giftButton = document.getElementById("giftButton");
     const giftBox = document.getElementById("giftBox");
+    let permanentlyDisabled = false;
 
     stomp.connect({}, () => {
-        // 1) 접속자 수 수신 구독 (먼저 실행)
+        // 1) 접속자 수와 남은 선물 개수 수신 구독 (먼저 실행)
         stomp.subscribe(`/topic/viewers/${eventId}`, function (message) {
-            document.getElementById("viewerCount").innerText = message.body;
+            const data = JSON.parse(message.body);
+            document.getElementById("viewerCount").innerText = data.viewerCount;
+            document.getElementById("remainingGifts").innerText = data.remainingGifts;
 
             // 수신 이후에 페이지 표시
             document.getElementById("loader").style.display = "none";
@@ -75,36 +114,51 @@
 
             // ── 서버가 "data:image/…" 형태의 Base64 data URL을 보냈을 때만 성공 분기
             if (payload.startsWith("data:image/")) {
+                permanentlyDisabled = true;
+                giftButton.disabled = true;
                 giftBox.innerHTML = `
                     <p>🎉 축하합니다! 선물을 획득했습니다!</p>
-                    <img src="${payload}" width="300"/>
+                    <div class="image-container">
+                      <img src="${payload}" width="300"/>
+                    </div>
                 `;
             }
             // ── 실패 코드 분기
             else if (payload === "FAILED") {
                 giftBox.innerHTML = `
                     <p>😆 실패했습니다! 다시 시도해 주세요!</p>
-                    <img src="https://i.namu.wiki/i/T5pSsHdoeOariQFbBYgKrxBulN1adE0fkINh3d4brcMUSpkda77l1ClV7T3bfSkWxyOM0pa2orPXflQUgc29ww.webp" width="300"/>
+                    <div class="image-container">
+                      <img src="https://i.namu.wiki/i/T5pSsHdoeOariQFbBYgKrxBulN1adE0fkINh3d4brcMUSpkda77l1ClV7T3bfSkWxyOM0pa2orPXflQUgc29ww.webp" width="300"/>
+                    </div>
                 `;
             }
             // ── 완판 코드 분기
             else if (payload === "SOLD_OUT") {
+                permanentlyDisabled = true;
+                giftButton.disabled = true;
                 giftBox.innerHTML = `
                     <p>😢 선착순 마감! 너무 아쉬워요!!</p>
-                    <img src="https://i.imgur.com/SDGqQQZ.gif" width="300"/>
+                    <div class="image-container">
+                      <img src="https://i.imgur.com/SDGqQQZ.gif" width="300"/>
+                    </div>
                 `;
-                giftButton.disabled = true; // 선물 마감 시 버튼 비활성화
             }
         });
     });
 
     // 4) 버튼 클릭 시 선물 요청
     giftButton.addEventListener("click", () => {
+        if (permanentlyDisabled) return;
+
         stomp.send(`/app/claim/${eventId}`, {}, "화랑");
-        giftButton.disabled = true; // 버튼 일시 비활성화
+        giftButton.disabled = true;
+
         setTimeout(() => {
-            giftButton.disabled = false; // 5초 후 버튼 다시 활성화
-        }, 1000);
+            if (!permanentlyDisabled) {
+                giftButton.disabled = false;
+                console.log('버튼 활성화 로직 호출')
+            }
+        }, 500);
     });
 </script>
 
