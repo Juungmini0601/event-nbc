@@ -17,7 +17,11 @@ public class RedisService {
 
 	public Boolean setEvent(Event event) {
 
-		Duration ttl = Duration.between(LocalDateTime.now(), event.getEndAt());
+		Duration ttl = Duration.between(
+			java.time.Instant.now()
+				.atZone(java.time.ZoneId.of("Asia/Seoul"))
+				.toLocalDateTime(), 
+			event.getEndAt());
 
 		return template.opsForValue().setIfAbsent(event.getEventId(), event, ttl);
 	}
@@ -29,7 +33,11 @@ public class RedisService {
 
 	public Boolean updateEvent(Event event) {
 
-		Duration ttl = Duration.between(LocalDateTime.now(), event.getEndAt());
+		Duration ttl = Duration.between(
+			java.time.Instant.now()
+				.atZone(java.time.ZoneId.of("Asia/Seoul"))
+				.toLocalDateTime(), 
+			event.getEndAt());
 
 		return template.opsForValue().setIfPresent(event.getEventId(), event, ttl);
 	}

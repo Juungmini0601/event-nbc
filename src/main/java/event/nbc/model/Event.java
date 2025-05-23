@@ -1,6 +1,8 @@
 package event.nbc.model;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -52,7 +54,10 @@ public class Event {
 	}
 
 	public boolean isEventActive() {
-		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime now = Instant.now()
+			.atZone(ZoneId.of("Asia/Seoul"))
+			.toLocalDateTime();
+
 		return !now.isBefore(this.startAt) && !now.isAfter(this.endAt);
 	}
 
