@@ -10,6 +10,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -24,15 +25,18 @@ public class ClaimController {
     private final ViewerSessionService viewerSessionService;
 
     @MessageMapping("/claim/{eventId}")
-    public void claim(@DestinationVariable Long eventId, String nickname) {
+    public void claim(
+        @DestinationVariable Long eventId,
+        Principal principal
+    ) {
         String result = eventParticipationService.participateEvent(eventId);
 
         if ("SOLD_OUT".equals(result)) {
-            messagingTemplate.convertAndSend("/topic/result/" + eventId, "SOLD_OUT");
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/result/" + eventId, "SOLD_OUT");
         } else if ("FAILED".equals(result)) {
-            messagingTemplate.convertAndSend("/topic/result/" + eventId, "FAILED");
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/result/" + eventId, "FAILED");
         } else {
-            messagingTemplate.convertAndSend("/topic/result/" + eventId, result);
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/result/" + eventId, result);
         }
 
         // 이벤트에서 남은 선물 개수 가져오기

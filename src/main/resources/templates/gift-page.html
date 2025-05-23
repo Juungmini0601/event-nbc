@@ -108,7 +108,7 @@
         stomp.send(`/app/enter/${eventId}`, {}, "화랑");
 
         // 3) 선물 결과 구독
-        stomp.subscribe(`/topic/result/${eventId}`, function (message) {
+        stomp.subscribe(`/user/queue/result/${eventId}`, function (message) {
             giftBox.style.display = "block";
             const payload = message.body;
 
