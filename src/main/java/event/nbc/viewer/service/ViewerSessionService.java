@@ -39,7 +39,9 @@ public class ViewerSessionService {
             sessionIdToEventMap.remove(sessionId);
             redis.opsForSet().remove("event:" + eventId + ":sessions", sessionId);
             redis.delete("session:" + sessionId);
-            return sessions != null ? sessions.size() : -1;
+
+            Long count = redis.opsForSet().size("event:" + eventId + ":sessions");
+            return count != null ? count.intValue() : 0;
         }
         return -1;
     }
